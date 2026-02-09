@@ -2,3 +2,6 @@
 __pycache__/
 *.pyc
 .venv
+.bedrock_agentcore.yaml
+.bedrock_agentcore/
+docs.md
