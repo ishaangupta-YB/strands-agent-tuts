@@ -3,25 +3,12 @@ from dotenv import load_dotenv
 import sys
 import logging
 from strands import Agent, tool
-from strands_tools import calculator, current_time
+from strands_tools import calculator, current_time, http_request
 from strands.models import BedrockModel
 from botocore.config import Config as BotocoreConfig
 
-# Load environment variables from root .env file
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
-
-# Enable debug logs (optional - uncomment to see detailed logs)
-# logging.getLogger("strands").setLevel(logging.DEBUG)
-# logging.basicConfig(
-#     format="%(levelname)s | %(name)s | %(message)s",
-#     handlers=[logging.StreamHandler()]
-# )
-
-
-# ============================================================================
-# Custom Tool
-# ============================================================================
-
+  
 @tool
 def letter_counter(word: str, letter: str) -> int:
     """
@@ -42,11 +29,7 @@ def letter_counter(word: str, letter: str) -> int:
 
     return word.lower().count(letter.lower())
 
-
-# ============================================================================
-# Model Configuration
-# ============================================================================
-
+ 
 # Custom boto client config with retry settings
 boto_config = BotocoreConfig(
     retries={"max_attempts": 3, "mode": "standard"},
@@ -76,11 +59,7 @@ non_streaming_model = BedrockModel(
     boto_client_config=boto_config,
 )
 
-
-# ============================================================================
-# System Prompt
-# ============================================================================
-
+ 
 system_prompt = """
 You are a friendly and helpful AI chatbot assistant.
 
@@ -88,6 +67,7 @@ You have access to several tools:
 - Calculator for mathematical operations
 - Current time checker
 - Letter counter for analyzing words
+- HTTP Client for fetching web content
 
 Your personality:
 - Be conversational and natural
@@ -98,11 +78,6 @@ Your personality:
 
 Always strive to provide the best assistance possible!
 """
-
-
-# ============================================================================
-# Callback Handler
-# ============================================================================
 
 # Track tool use IDs to avoid duplicate notifications
 tool_use_ids = []
@@ -129,12 +104,34 @@ def callback_handler(**kwargs):
             tool_name = tool.get("name", "Unknown")
             print(f"\n[🔧 Using tool: {tool_name}]", flush=True)
             tool_use_ids.append(tool["toolUseId"])
+    elif "message" in kwargs:
+        msg = kwargs["message"]
+        content = msg.get("content", [])
+        
+        # Check for Tool Use (Input)
+        if msg.get("role") == "assistant":
+            for block in content:
+                if isinstance(block, dict) and "toolUse" in block:
+                    tool_use = block["toolUse"]
+                    print(f"\n\n--- 🔧 Tool Request: {tool_use.get('name')} ---")
+                    print(f"ID: {tool_use.get('toolUseId')}")
+                    print(f"Input: {tool_use.get('input')}")
+                    print("------------------------------------------\n")
+        
+        # Check for Tool Result (Output)
+        elif msg.get("role") == "user":
+            for block in content:
+                if isinstance(block, dict) and "toolResult" in block:
+                    tool_res = block["toolResult"]
+                    print(f"\n\n--- ✅ Tool Response ---")
+                    print(f"ID: {tool_res.get('toolUseId')}")
+                    print(f"Status: {tool_res.get('status')}")
+                    # Content is a list of blocks usually
+                    res_content = tool_res.get('content', [])
+                    print(f"Content: {res_content}")
+                    print("------------------------\n")
 
-
-# ============================================================================
-# Agent Setup
-# ============================================================================
-
+ 
 def create_agent(streaming=True):
     """
     Create an agent with the specified streaming mode.
@@ -153,15 +150,10 @@ def create_agent(streaming=True):
 
     return Agent(
         model=model,
-        tools=[calculator, current_time, letter_counter],
+        tools=[calculator, current_time, letter_counter, http_request],
         system_prompt=system_prompt,
         callback_handler=callback_handler,
     )
-
-
-# ============================================================================
-# Interactive Chat Loop
-# ============================================================================
 
 def main():
     """Run an interactive chatbot session."""

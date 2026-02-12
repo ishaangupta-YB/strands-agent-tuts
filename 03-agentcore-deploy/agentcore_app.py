@@ -1,19 +1,13 @@
 from pathlib import Path
 from dotenv import load_dotenv
 from strands import Agent, tool
-from strands_tools import calculator, current_time, tavily
+from strands_tools import calculator, current_time, tavily, use_aws
 from strands.models import BedrockModel
 from botocore.config import Config as BotocoreConfig
 from bedrock_agentcore.runtime import BedrockAgentCoreApp, BedrockAgentCoreContext
 
-
-# Load environment variables from root .env file
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
-
-# ============================================================================
-# Custom Tool
-# ============================================================================
-
+ 
 @tool
 def letter_counter(word: str, letter: str) -> int:
     """
@@ -34,11 +28,6 @@ def letter_counter(word: str, letter: str) -> int:
 
     return word.lower().count(letter.lower())
 
-
-# ============================================================================
-# Model Configuration
-# ============================================================================
-
 boto_config = BotocoreConfig(
     retries={"max_attempts": 3, "mode": "standard"},
     connect_timeout=5,
@@ -53,11 +42,6 @@ model_config = dict(
     boto_client_config=boto_config,
 )
 
-
-# ============================================================================
-# System Prompt
-# ============================================================================
-
 SYSTEM_PROMPT = """
 You are a friendly and helpful AI chatbot assistant with memory and web search.
 
@@ -66,6 +50,7 @@ You have access to several tools:
 - **Calculator**: For mathematical operations
 - **Current Time**: Check the current time
 - **Letter Counter**: Count letter occurrences in words
+- **AWS Services**: Interact with AWS services (S3, Lambda, DynamoDB, etc.)
 
 Your personality:
 - Be conversational and natural — this is a multi-turn chat
@@ -75,17 +60,11 @@ Your personality:
 - If you don't know something or can't help, be honest about it
 """
 
-TOOLS = [tavily, calculator, current_time, letter_counter]
-
-
-# ============================================================================
-# Session Management & AgentCore App
-# ============================================================================
+TOOLS = [tavily, calculator, current_time, letter_counter, use_aws]
 
 agents_by_session: dict[str, Agent] = {}
 
 app = BedrockAgentCoreApp()
-
 
 def get_or_create_agent(session_id: str) -> Agent:
     """Return existing agent for this session, or create a new one."""
