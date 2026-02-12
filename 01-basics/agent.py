@@ -1,19 +1,13 @@
+from pathlib import Path
 from dotenv import load_dotenv
 import logging
 from strands import Agent, tool
-from strands_tools import calculator, current_time
+from strands_tools import calculator, current_time, http_request
 from strands.models import BedrockModel
 from botocore.config import Config as BotocoreConfig
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Enable debug logs (optional - uncomment to see detailed logs)
-# logging.getLogger("strands").setLevel(logging.DEBUG)
-# logging.basicConfig(
-#     format="%(levelname)s | %(name)s | %(message)s",
-#     handlers=[logging.StreamHandler()]
-# )
+# Load environment variables from root .env file
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 # Define a custom tool as a Python function using the @tool decorator
 @tool
@@ -65,7 +59,7 @@ Always be accurate, concise, and friendly in your responses.
 # Default callback handler prints streaming output to console
 agent = Agent(
     model=model,
-    tools=[calculator, current_time, letter_counter],
+    tools=[calculator, current_time, letter_counter,http_request],
     system_prompt=system_prompt,
     # callback_handler=None,  # Uncomment to disable real-time console output
 )

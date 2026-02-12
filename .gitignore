@@ -4,4 +4,4 @@ __pycache__/
 .venv
 .bedrock_agentcore.yaml
 .bedrock_agentcore/
-docs.md
+docs/

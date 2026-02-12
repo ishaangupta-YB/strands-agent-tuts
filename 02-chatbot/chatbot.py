@@ -1,3 +1,4 @@
+from pathlib import Path
 from dotenv import load_dotenv
 import sys
 import logging
@@ -6,8 +7,8 @@ from strands_tools import calculator, current_time
 from strands.models import BedrockModel
 from botocore.config import Config as BotocoreConfig
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from root .env file
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 # Enable debug logs (optional - uncomment to see detailed logs)
 # logging.getLogger("strands").setLevel(logging.DEBUG)

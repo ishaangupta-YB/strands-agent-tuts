@@ -1,83 +1,87 @@
-# Strands AI Agent Project
+# Strands Agents: From Scratch to Production
 
-This project demonstrates AWS Bedrock agents using the Strands framework with Claude 4.
+A hands-on learning repo for building AI agents with **AWS Strands Agents SDK** and deploying them to **Amazon Bedrock AgentCore**. Each folder is a progressive step — from a basic one-shot agent to a production-deployed multi-turn chatbot with web search.
 
-## Files
+## Project Structure
 
-- **agent.py** - Simple one-shot agent demo with example queries
-- **chatbot.py** - Interactive chatbot with streaming & non-streaming support
+```
+strands-test/
+├── 01-basics/                  # One-shot agent fundamentals
+│   └── agent.py
+├── 02-chatbot/                 # Interactive multi-turn chatbot (local)
+│   └── chatbot.py
+├── 03-agentcore-deploy/        # Production deploy to AgentCore
+│   ├── agentcore_app.py        # Multi-turn + web search + sessions
+│   └── chat.sh                 # Terminal chat wrapper
+├── docs/
+│   └── agentcore-reference.md  # AgentCore deployment reference
+├── requirements.txt            # Shared Python dependencies
+├── .env                        # AWS creds + API keys (gitignored)
+└── CLAUDE.md                   # Project context for Claude Code
+```
 
-## Setup
+## Learning Path
 
-1. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+| Step | Folder | What You Build | Key Concepts |
+|------|--------|---------------|--------------|
+| 1 | `01-basics/` | One-shot agent | `Agent`, `BedrockModel`, `@tool`, built-in tools |
+| 2 | `02-chatbot/` | Local chatbot | Multi-turn memory, streaming vs non-streaming, callbacks |
+| 3 | `03-agentcore-deploy/` | Cloud chatbot | AgentCore deploy, session management, Tavily web search |
 
-2. **Configure AWS credentials in `.env`:**
-   ```env
-   AWS_ACCESS_KEY_ID=your-access-key-id
-   AWS_SECRET_ACCESS_KEY=your-secret-access-key
-   AWS_DEFAULT_REGION=us-east-1
-   ```
+## Quick Start
 
-## Usage
+### 1. Setup
 
-### Run the basic agent demo:
 ```bash
-python agent.py
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-### Run the interactive chatbot:
+### 2. Configure `.env`
 
-**Streaming mode (default) — tokens arrive in real-time:**
+```env
+AWS_ACCESS_KEY_ID=your-key
+AWS_SECRET_ACCESS_KEY=your-secret
+AWS_DEFAULT_REGION=us-east-1
+TAVILY_API_KEY=your-tavily-key
+```
+
+### 3. Run each step
+
 ```bash
-python chatbot.py
+# Step 1: Basic one-shot agent
+python 01-basics/agent.py
+
+# Step 2: Interactive local chatbot
+python 02-chatbot/chatbot.py
+
+# Step 3: Deploy to AgentCore
+agentcore configure --entrypoint 03-agentcore-deploy/agentcore_app.py
+agentcore deploy --env TAVILY_API_KEY=$TAVILY_API_KEY
+./03-agentcore-deploy/chat.sh
 ```
 
-**Non-streaming mode — full response arrives at once:**
-```bash
-python chatbot.py --no-stream
-```
+## Tech Stack
 
-## Features
+- **[Strands Agents SDK](https://github.com/strands-agents/sdk-python)** — Agent framework
+- **[Amazon Bedrock](https://aws.amazon.com/bedrock/)** — Claude Sonnet model hosting
+- **[Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/)** — Agent deployment runtime
+- **[Tavily](https://tavily.com/)** — Web search API for agents
 
-### Available Tools
-- **Calculator** - Perform mathematical calculations
-- **Current Time** - Get the current time
-- **Letter Counter** - Count specific letters in words
+## Model Configuration
 
-### Streaming vs Non-Streaming
+All examples use the same base model config:
 
-Both are **BedrockModel configurations** — not Python async patterns:
-
-| Mode | Flag | Behavior |
-|------|------|----------|
-| **Streaming** (default) | `python chatbot.py` | Tokens appear one by one as they're generated |
-| **Non-streaming** | `python chatbot.py --no-stream` | Full response arrives at once |
-
-Both modes use the **same callback handler** — Strands internally converts non-streaming responses to the same event format. Non-streaming is useful for models that don't support streaming tool use (e.g., Llama models).
-
-## Configuration
-
-### Model Settings
-- Model: Claude 4 Sonnet on Amazon Bedrock
-- Region: us-east-1 (configurable)
-- Temperature: 0.7
-- Boto client: Retry (3 attempts), connect timeout (5s), read timeout (60s)
-
-### Debug Logging
-Uncomment the logging configuration in the files to enable debug logs:
-```python
-logging.getLogger("strands").setLevel(logging.DEBUG)
-logging.basicConfig(
-    format="%(levelname)s | %(name)s | %(message)s",
-    handlers=[logging.StreamHandler()]
-)
-```
+| Setting | Value |
+|---------|-------|
+| Model | Claude Sonnet (`us.anthropic.claude-sonnet-4-20250514-v1:0`) |
+| Region | `us-east-1` |
+| Temperature | `0.7` |
+| Retries | 3 attempts, standard mode |
+| Timeouts | Connect: 5s, Read: 60s |
 
 ## Requirements
 
-- Python 3.8+
-- AWS account with Bedrock access
-- IAM permissions for Claude 4 model invocation
+- Python 3.10+
+- AWS account with Bedrock access (Claude Sonnet enabled)
+- Tavily API key (for step 3 web search)
