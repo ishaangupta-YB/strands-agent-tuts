@@ -9,7 +9,8 @@ strands-test/
 ├── 01-basics/                  # One-shot agent fundamentals
 │   └── agent.py
 ├── 02-chatbot/                 # Interactive multi-turn chatbot (local)
-│   └── chatbot.py
+│   ├── chatbot.py              # Chatbot with hooks + callbacks
+│   └── chatbot_hooks.log       # Hook output log (generated at runtime)
 ├── 03-agentcore-deploy/        # Production deploy to AgentCore
 │   ├── agentcore_app.py        # Multi-turn + web search + sessions
 │   └── chat.sh                 # Terminal chat wrapper
@@ -25,7 +26,7 @@ strands-test/
 | Step | Folder | What You Build | Key Concepts |
 |------|--------|---------------|--------------|
 | 1 | `01-basics/` | One-shot agent | `Agent`, `BedrockModel`, `@tool`, built-in tools |
-| 2 | `02-chatbot/` | Local chatbot | Multi-turn memory, streaming vs non-streaming, callbacks |
+| 2 | `02-chatbot/` | Local chatbot | Multi-turn memory, streaming vs non-streaming, callbacks, hooks |
 | 3 | `03-agentcore-deploy/` | Cloud chatbot | AgentCore deploy, session management, Tavily web search |
 
 ## Quick Start

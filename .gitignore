@@ -5,3 +5,4 @@ __pycache__/
 .bedrock_agentcore.yaml
 .bedrock_agentcore/
 docs/
+*.log

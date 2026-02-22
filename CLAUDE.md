@@ -5,7 +5,8 @@ This is a hands-on learning repo for **AWS Strands Agents SDK** + **Amazon Bedro
 ## Repo Structure
 
 - `01-basics/agent.py` — One-shot agent demo (local, beginner)
-- `02-chatbot/chatbot.py` — Interactive multi-turn chatbot (local, streaming/non-streaming)
+- `02-chatbot/chatbot.py` — Interactive multi-turn chatbot (local, streaming/non-streaming, hooks)
+- `02-chatbot/chatbot_hooks.log` — Hook output log (generated at runtime)
 - `03-agentcore-deploy/agentcore_app.py` — Production chatbot deployed to AgentCore (multi-turn sessions + Tavily web search)
 - `03-agentcore-deploy/chat.sh` — Terminal chat wrapper for `agentcore invoke`
 - `docs/agentcore-reference.md` — AgentCore deployment reference documentation
@@ -19,6 +20,7 @@ This is a hands-on learning repo for **AWS Strands Agents SDK** + **Amazon Bedro
 - **AgentCore session IDs**: Must be **33+ characters** (e.g., UUID-based). Short IDs will fail with validation error.
 - **load_dotenv paths**: Scripts in subfolders use `Path(__file__).resolve().parent.parent / ".env"` to find root `.env`.
 - **Model**: All examples use `us.anthropic.claude-sonnet-4-20250514-v1:0` on Bedrock (`us-east-1`).
+- **Hooks** (`02-chatbot`): `HookProvider` classes registered via `hooks=[...]` on `Agent`. Three hooks: `InvocationLoggingHook` (lifecycle timing), `ToolUsageTrackerHook` (per-invocation usage stats), `LimitToolCallsHook` (caps tool calls to prevent loops). Output goes to `chatbot_hooks.log`.
 
 ## Deployment Workflow
 
