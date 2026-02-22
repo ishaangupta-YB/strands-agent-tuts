@@ -52,8 +52,15 @@ while true; do
     escaped_input="${escaped_input//\"/\\\"}"
 
     echo ""
-    echo -n "Agent: "
-    agentcore invoke $DEV_FLAG --session-id "$SESSION_ID" "{\"prompt\": \"$escaped_input\"}" 2>/dev/null
-    echo ""
+
+    # Invoke and capture full output, strip metadata box and "Response:" label
+    raw_output=$(agentcore invoke $DEV_FLAG --session-id "$SESSION_ID" "{\"prompt\": \"$escaped_input\"}" 2>/dev/null)
+
+    clean_output=$(echo "$raw_output" \
+        | sed '/^╭/,/^╰/d' \
+        | sed '/^Response:$/d' \
+        | sed '/^[[:space:]]*$/d')
+
+    echo "Agent: $clean_output"
     echo ""
 done
